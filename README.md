@@ -7,23 +7,49 @@ The "rzrasel-tutorial-git-tool" branch is dedicated to creating tutorials on "gi
 
 ```git_flow_local_tutorial
 // Regular Git Command
+// ---- git init
+mkdir rzrasel-gitflow-tutorial
+cd rzrasel-gitflow-tutorial/
+ll
+git status
 git init
-git flow init
+git status
+clear
+git log --oneline
+clear
+git flow -h
 
 // Git Flow Command
-----------------[(All Accepted By Pressing Enter)]
+git flow init
+----------------[(Accepted All Default By Pressing Enter)]
+git status
 git branch
+git flow -h
+git flow feature -h
+git flow feature list
 --------------------------------Feature Branch gitflow-tutorial
-git flow feature start gitflow-tutorial [(if multple word use quate)]
+git flow feature start gitflow-feature [(if multple word use quate)]
+clear
+git branch
+git flow feature list
 ----------------[(Add And Work In A File)]
+// touch gitflow-feature.txt
+// echo "gitflow-feature" > gitflow-feature.txt
 git add .
-git commit -m "Git Flow Tutorial Rz Rasel"
-git flow feature finish gitflow-tutorial
+git commit -m "Git Flow Feature Complete Rz Rasel"
+git log --oneline
+git flow feature finish gitflow-feature
+git branch
+git flow feature list
+clear
+ll
+git log
+clear
 --------------------------------Release Branch 0.0.1
 git flow release start 0.0.1
 ----------------[(Add And Work In A File)]
 git add .
-git commit -m "Git Flow Release Bug Fixed Rz Rasel"
+git commit -m "Git Flow Release Fixed Rz Rasel"
 git flow release finish 0.0.1
 i
 esc
@@ -41,13 +67,13 @@ esc
 git flow hotfix start gitflow-hotfix
 ----------------[(Add And Work In A File)]
 git add .
-git commit -m "Git Flow Hotfix Bug Fixed Rz Rasel"
-git flow hotfix finish gitflow-bugfix
+git commit -m "Git Flow Hotfix Fixed Rz Rasel"
+git flow hotfix finish gitflow-hotfix
 i
 esc
 :wq
 ---- ---- hotfix (Tag)
-hotfix-tag v-0.0.1
+tag v-0.0.1
 esc
 :wq
 ---- ---- ---- ----hotfix Merge Commit
@@ -72,15 +98,45 @@ git flow init
 git branch -a
 git push origin
 git push --set-upstream origin development
---------------------------------Branch Gitflow Tutorial
-git flow feature start gitflow-tutorial
+--------------------------------Feature Branch Gitflow Tutorial
+git flow feature start gitflow-feature
 git branch -a
 --------------[(Add And Work In A File)]
 git add .
-git commit -m "Git Flow Tutorial Rz Rasel"
-git flow feature finish gitflow-tutorial
+git commit -m "Git Flow Feature Complete Rz Rasel"
+git flow feature finish gitflow-feature
+git branch -a
+ls
+git push origin
+--------------[(Watch Remote Git Account)]
+--------------------------------Release Branch 0.0.1
+git flow release start '0.0.1'
 git branch -a
 git push origin
+git push --set-upstream origin release/0.0.1
+--------------[(Add And Work In A File)]
+git add .
+git commit -m "Git Flow Release Fixed Rz Rasel"
+git push origin
+git flow release finish '0.0.1'
+i
+esc
+:wq
+---- ---- ---- ----Tag
+i
+tag v-0.0.1
+esc
+:wq
+---- ---- ---- ----Merge Commit
+i
+esc
+:wq
+git branch -a
+ls
+git checkout master
+ls
+git push origin
+git tag -l
 ```
 
 ### Rz Rasel - Gitflow Extra Tutorial
@@ -96,6 +152,8 @@ git merge feature_branch
 git flow feature finish feature_branch
 ------------------------------------------------
 ```
+
+[Git Flow Part 3 - Learn Git Flow commands | How to use Git Flow Tutorial](https://youtu.be/ye4LVrQ0TuM)
 
 # Rz Rasel Git Tutorial
 ### Rz Rasel Git Tutorial
