@@ -1,0 +1,69 @@
+name: Auto Set PR Target Branch
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  set-pr-target:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensure all branches are available
+
+      - name: Determine Target Branch
+        id: target_branch
+        run: |
+          PR_SOURCE="${{ github.event.pull_request.head.ref }}"
+          PR_TARGET="${{ github.event.pull_request.base.ref }}"
+
+          # Default main/master branch check
+          MAIN_BRANCH="main"
+          if git rev-parse --verify origin/master >/dev/null 2>&1; then
+            MAIN_BRANCH="master"
+          fi
+
+          # If PR source is NOT master, main, or dev*, find latest dev* branch
+          if [[ ! "$PR_SOURCE" =~ ^(main|master|dev.*)$ ]]; then
+            DEV_BRANCH=$(git branch -r --sort=-committerdate | grep -E 'origin/dev.*' | head -n 1 | sed 's/origin\///')
+            if [[ -z "$DEV_BRANCH" ]]; then
+              echo "No dev* branch found! Exiting..."
+              exit 1
+            fi
+            PR_TARGET="$DEV_BRANCH"
+          fi
+
+          # If PR source is a dev* branch, target master/main
+          if [[ "$PR_SOURCE" =~ ^dev.*$ ]]; then
+            PR_TARGET="$MAIN_BRANCH"
+          fi
+
+          echo "Target branch: $PR_TARGET"
+          echo "TARGET_BRANCH=$PR_TARGET" >> $GITHUB_ENV
+
+      - name: Update PR Target Branch
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo, number } = context.issue;
+            const targetBranch = process.env.TARGET_BRANCH;
+
+            if (!targetBranch) {
+              console.log("No valid target branch found. Skipping update.");
+              return;
+            }
+
+            github.rest.pulls.update({
+              owner,
+              repo,
+              pull_number: number,
+              base: targetBranch
+            });
+
+            console.log(`Updated PR target branch to ${targetBranch}`);
