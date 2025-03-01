@@ -157,6 +157,7 @@ git flow feature finish feature_branch
 
 # Rz Rasel Git Tutorial
 ### Rz Rasel Git Tutorial
+- Git Commit Number - 8
 - Git Commit Number - 7
 - Git Commit Number - 6
 - Git Commit Number - 5
