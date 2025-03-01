@@ -1,0 +1,46 @@
+name: Create New Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "New branch name"
+        required: true
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all branches
+
+      - name: Determine Base Branch
+        id: base_branch
+        run: |
+          NEW_BRANCH="${{ github.event.inputs.branch_name }}"
+
+          # Default base branch is 'main' or 'master'
+          BASE_BRANCH="main"
+          if git rev-parse --verify origin/master >/dev/null 2>&1; then
+            BASE_BRANCH="master"
+          fi
+
+          # If the new branch name does NOT start with "dev", find latest "dev*" branch
+          if [[ ! "$NEW_BRANCH" =~ ^dev ]]; then
+            DEV_BRANCH=$(git branch -r --sort=-committerdate | grep -E 'origin/dev.*' | head -n 1 | sed 's/origin\///')
+            if [[ -n "$DEV_BRANCH" ]]; then
+              BASE_BRANCH="$DEV_BRANCH"
+            fi
+          fi
+
+          echo "Base branch: $BASE_BRANCH"
+          echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
+
+      - name: Create and Push New Branch
+        run: |
+          git checkout -b "${{ github.event.inputs.branch_name }}" "$BASE_BRANCH"
+          git push origin "${{ github.event.inputs.branch_name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
