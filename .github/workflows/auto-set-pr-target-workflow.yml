@@ -28,7 +28,7 @@ jobs:
             MAIN_BRANCH="master"
           fi
 
-          # If PR source is NOT master, main, or dev*, find latest dev* branch
+          # If PR source is NOT main, master, or dev*, find latest dev* branch
           if [[ ! "$PR_SOURCE" =~ ^(main|master|dev.*)$ ]]; then
             DEV_BRANCH=$(git branch -r --sort=-committerdate | grep -E 'origin/dev.*' | head -n 1 | sed 's/origin\///')
             if [[ -z "$DEV_BRANCH" ]]; then
@@ -49,7 +49,7 @@ jobs:
       - name: Update PR Target Branch
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN }}  # Use Personal Access Token
           script: |
             const { owner, repo, number } = context.issue;
             const targetBranch = process.env.TARGET_BRANCH;
