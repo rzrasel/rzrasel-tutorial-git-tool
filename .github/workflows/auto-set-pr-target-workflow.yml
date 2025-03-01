@@ -16,22 +16,26 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all branches
 
+      - name: Debug PR Information
+        run: |
+          echo "🔍 Debugging PR Information"
+          echo "PR Source Branch: ${{ github.event.pull_request.head.ref }}"
+          echo "PR Current Target Branch: ${{ github.event.pull_request.base.ref }}"
+
       - name: Determine Target Branch
         id: target_branch
         run: |
           PR_SOURCE="${{ github.event.pull_request.head.ref }}"
           PR_TARGET="${{ github.event.pull_request.base.ref }}"
 
-          echo "📌 Source Branch: $PR_SOURCE"
-          echo "📌 Current Target Branch: $PR_TARGET"
+          echo "🔍 Source Branch: $PR_SOURCE"
+          echo "🔍 Current Target Branch: $PR_TARGET"
 
-          # Default base branch is 'main' or 'master'
           MAIN_BRANCH="main"
-          if git rev-parse --verify origin/master >/dev/null 2>&1; then
+          if git ls-remote --heads origin master | grep -q "refs/heads/master"; then
             MAIN_BRANCH="master"
           fi
 
-          # If PR source is NOT master, main, or dev*, find latest dev* branch
           if [[ ! "$PR_SOURCE" =~ ^(main|master|dev.*)$ ]]; then
             DEV_BRANCH=$(git branch -r --sort=-committerdate | grep -E 'origin/dev.*' | head -n 1 | sed 's/origin\///')
             if [[ -z "$DEV_BRANCH" ]]; then
@@ -41,7 +45,6 @@ jobs:
             PR_TARGET="$DEV_BRANCH"
           fi
 
-          # If PR source is a dev* branch, target master/main
           if [[ "$PR_SOURCE" =~ ^dev.*$ ]]; then
             PR_TARGET="$MAIN_BRANCH"
           fi
