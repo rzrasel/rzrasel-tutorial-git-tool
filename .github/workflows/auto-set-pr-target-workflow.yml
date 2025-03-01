@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensure all branches are available
+          fetch-depth: 0  # Fetch all branches
 
       - name: Determine Target Branch
         id: target_branch
@@ -22,17 +22,20 @@ jobs:
           PR_SOURCE="${{ github.event.pull_request.head.ref }}"
           PR_TARGET="${{ github.event.pull_request.base.ref }}"
 
-          # Default main/master branch check
+          echo "📌 Source Branch: $PR_SOURCE"
+          echo "📌 Current Target Branch: $PR_TARGET"
+
+          # Default base branch is 'main' or 'master'
           MAIN_BRANCH="main"
           if git rev-parse --verify origin/master >/dev/null 2>&1; then
             MAIN_BRANCH="master"
           fi
 
-          # If PR source is NOT main, master, or dev*, find latest dev* branch
+          # If PR source is NOT master, main, or dev*, find latest dev* branch
           if [[ ! "$PR_SOURCE" =~ ^(main|master|dev.*)$ ]]; then
             DEV_BRANCH=$(git branch -r --sort=-committerdate | grep -E 'origin/dev.*' | head -n 1 | sed 's/origin\///')
             if [[ -z "$DEV_BRANCH" ]]; then
-              echo "No dev* branch found! Exiting..."
+              echo "❌ No dev* branch found! Exiting..."
               exit 1
             fi
             PR_TARGET="$DEV_BRANCH"
@@ -43,27 +46,29 @@ jobs:
             PR_TARGET="$MAIN_BRANCH"
           fi
 
-          echo "Target branch: $PR_TARGET"
+          echo "✅ New Target Branch: $PR_TARGET"
           echo "TARGET_BRANCH=$PR_TARGET" >> $GITHUB_ENV
 
       - name: Update PR Target Branch
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PAT_TOKEN }}  # Use Personal Access Token
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { owner, repo, number } = context.issue;
             const targetBranch = process.env.TARGET_BRANCH;
 
+            console.log(`🔄 Attempting to update PR target branch to: ${targetBranch}`);
+
             if (!targetBranch) {
-              console.log("No valid target branch found. Skipping update.");
+              console.log("❌ No valid target branch found. Skipping update.");
               return;
             }
 
-            github.rest.pulls.update({
+            await github.rest.pulls.update({
               owner,
               repo,
               pull_number: number,
               base: targetBranch
             });
 
-            console.log(`Updated PR target branch to ${targetBranch}`);
+            console.log(`✅ Successfully updated PR target branch to ${targetBranch}`);
